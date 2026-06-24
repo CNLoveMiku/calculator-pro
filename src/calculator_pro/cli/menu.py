@@ -30,25 +30,48 @@ from calculator_pro.visualization import (
 
 
 MenuHandler = Callable[[], None]
-LearningDetails = tuple[str, str, list[str]]
+LearningStep = tuple[str, str]
+LearningDetails = tuple[str, list[LearningStep]]
 
 LEARNING_MODE = False
+EXAM_MODE = False
 
 
 def run_cli() -> None:
     """Run the interactive IB Math AA HL ToolBox menu until the user exits."""
     actions: dict[str, tuple[str, MenuHandler]] = {
-        "1": ("Matrix tools", _matrix_menu),
+        "1": ("Algebra tools", _algebra_menu),
         "2": ("Probability tools", _probability_menu),
-        "3": ("Function tools", _function_menu),
-        "4": ("Vector tools", _vector_menu),
+        "3": ("Visualization", _visualization_menu),
+        "4": ("Learning mode settings", _learning_settings_menu),
         "5": ("Statistics tools", _statistics_menu),
-        "6": ("Visualization tools", _visualization_menu),
-        "7": ("Toggle learning mode ON/OFF", _toggle_learning_mode),
+        "6": ("Matrix tools", _matrix_menu),
+        "7": ("Vector tools", _vector_menu),
         "0": ("Exit", _exit_menu),
     }
 
     _run_menu("IB Math AA HL ToolBox", actions)
+
+
+def _algebra_menu() -> None:
+    actions: dict[str, tuple[str, MenuHandler]] = {
+        "1": ("Function tools", _function_menu),
+        "2": ("Matrix tools", _matrix_menu),
+        "3": ("Vector tools", _vector_menu),
+        "0": ("Back", _back_menu),
+    }
+
+    _run_menu("Algebra tools", actions)
+
+
+def _learning_settings_menu() -> None:
+    actions: dict[str, tuple[str, MenuHandler]] = {
+        "1": ("Toggle learning mode ON/OFF", _toggle_learning_mode),
+        "2": ("Toggle exam mode ON/OFF", _toggle_exam_mode),
+        "0": ("Back", _back_menu),
+    }
+
+    _run_menu("Learning mode settings", actions)
 
 
 def _matrix_menu() -> None:
@@ -125,7 +148,7 @@ def _run_menu(title: str, actions: dict[str, tuple[str, MenuHandler]]) -> None:
     """Display a menu and run actions until the user chooses 0."""
     while True:
         _print_header(title)
-        print(f"Learning mode: {'ON' if LEARNING_MODE else 'OFF'}")
+        print(f"Mode: {_current_mode_label()}")
         for key, (label, _) in actions.items():
             print(f"{key}. {label}")
 
@@ -155,10 +178,15 @@ def _matrix_addition() -> None:
     right = _read_matrix()
     details = (
         "C = A + B, so c_ij = a_ij + b_ij",
-        "Add entries in matching positions.",
         [
-            f"Check dimensions: A is {_matrix_size(left)}, B is {_matrix_size(right)}.",
-            "Add each matching pair of entries.",
+            (
+                f"Compare dimensions: A is {_matrix_size(left)} and B is {_matrix_size(right)}.",
+                "Matrix addition is defined only when both matrices have the same order.",
+            ),
+            (
+                "Add entries in matching positions to form each c_ij.",
+                "The definition of matrix addition is entry-wise addition.",
+            ),
         ],
     )
 
@@ -172,10 +200,15 @@ def _matrix_multiplication() -> None:
     right = _read_matrix()
     details = (
         "C = AB, so c_ij = row i of A dot column j of B",
-        "Multiply across rows and down columns, then add.",
         [
-            f"Check dimensions: A is {_matrix_size(left)}, B is {_matrix_size(right)}.",
-            "Each result entry is a row-column dot product.",
+            (
+                f"Check compatibility: A is {_matrix_size(left)} and B is {_matrix_size(right)}.",
+                "The number of columns in A must equal the number of rows in B.",
+            ),
+            (
+                "Compute each entry using a row-column dot product.",
+                "This is the formal definition of matrix multiplication used in IB matrices work.",
+            ),
         ],
     )
 
@@ -186,10 +219,15 @@ def _matrix_determinant() -> None:
     matrix = _read_matrix()
     details = (
         "For 2x2: det([[a,b],[c,d]]) = ad - bc",
-        "The determinant is a single number for a square matrix.",
         [
-            "Confirm the matrix is square.",
-            "Use the 2x2 rule or expand recursively along the first row.",
+            (
+                "Confirm the matrix is square.",
+                "Determinants are defined only for square matrices.",
+            ),
+            (
+                "Use ad - bc for 2x2, or expand recursively along the first row.",
+                "Cofactor expansion preserves determinant value and reduces the problem to smaller determinants.",
+            ),
         ],
     )
 
@@ -200,11 +238,19 @@ def _matrix_inverse() -> None:
     matrix = _read_matrix()
     details = (
         "A^-1 = adj(A) / det(A), and for 2x2 use (1/det)[[d,-b],[-c,a]]",
-        "The inverse reverses the effect of multiplying by the original matrix.",
         [
-            "Confirm the matrix is square.",
-            "Find det(A); an inverse exists only when det(A) is not 0.",
-            "Divide the adjugate matrix by det(A).",
+            (
+                "Confirm the matrix is square.",
+                "Only square matrices can have a two-sided inverse.",
+            ),
+            (
+                "Find det(A) and check it is not 0.",
+                "A zero determinant means the transformation collapses space, so no inverse exists.",
+            ),
+            (
+                "Use the 2x2 inverse rule or adj(A) / det(A).",
+                "The adjugate formula constructs a matrix that multiplies with A to give the identity.",
+            ),
         ],
     )
 
@@ -215,8 +261,16 @@ def _probability_factorial() -> None:
     n = _read_int("Enter n: ")
     details = (
         "n! = n x (n - 1) x ... x 2 x 1",
-        "Multiply all whole numbers from n down to 1.",
-        [f"Start at 1 and multiply by every integer from 2 to {n}."],
+        [
+            (
+                f"Multiply every positive integer from 1 to {n}.",
+                "Factorial counts ordered arrangements of n distinct items.",
+            ),
+            (
+                "Use 0! = 1 if n is zero.",
+                "The empty product is defined as 1, which keeps counting formulas consistent.",
+            ),
+        ],
     )
 
     _run_calculation(lambda: _print_value(f"{n}!", factorial(n)), details)
@@ -227,8 +281,16 @@ def _probability_permutations() -> None:
     r = _read_int("Enter r: ")
     details = (
         "nPr = n! / (n - r)!",
-        "Use permutations when order matters.",
-        [f"Choose {r} ordered items from {n} total items."],
+        [
+            (
+                f"Choose {r} ordered items from {n} total items.",
+                "A permutation treats AB and BA as different outcomes.",
+            ),
+            (
+                "Divide n! by (n - r)! to cancel unused arrangements.",
+                "Only the first r ordered positions are needed.",
+            ),
+        ],
     )
 
     _run_calculation(lambda: _print_value(f"{n}P{r}", permutations(n, r)), details)
@@ -239,8 +301,16 @@ def _probability_combinations() -> None:
     r = _read_int("Enter r: ")
     details = (
         "nCr = n! / (r! x (n - r)!)",
-        "Use combinations when order does not matter.",
-        [f"Choose {r} unordered items from {n} total items."],
+        [
+            (
+                f"Start from the ordered count {n}P{r}.",
+                "Permutations count the same group multiple times in different orders.",
+            ),
+            (
+                "Divide by r! to remove internal ordering of the selected group.",
+                "A combination treats the same selected items as one outcome.",
+            ),
+        ],
     )
 
     _run_calculation(lambda: _print_value(f"{n}C{r}", combinations(n, r)), details)
@@ -251,10 +321,15 @@ def _probability_conditional() -> None:
     probability_b = _read_float("Enter P(B): ")
     details = (
         "P(A|B) = P(A and B) / P(B)",
-        "Restrict attention to cases where B happened, then find how often A also happened.",
         [
-            f"Use P(A and B) = {_format_number(probability_a_and_b)}.",
-            f"Divide by P(B) = {_format_number(probability_b)}.",
+            (
+                f"Use the intersection probability P(A and B) = {_format_number(probability_a_and_b)}.",
+                "Only outcomes where both A and B happen are favorable after conditioning on B.",
+            ),
+            (
+                f"Divide by P(B) = {_format_number(probability_b)}.",
+                "Conditioning changes the sample space to B, so P(B) becomes the new total.",
+            ),
         ],
     )
 
@@ -273,11 +348,19 @@ def _probability_binomial() -> None:
     p = _read_float("Enter success probability p: ")
     details = (
         "P(X = k) = nCk x p^k x (1 - p)^(n - k)",
-        "Use this for exactly k successes in n independent trials.",
         [
-            f"Count ways to place the successes: {n}C{k}.",
-            f"Multiply by p^k = {_format_number(p)}^{k}.",
-            f"Multiply by (1 - p)^(n - k) = {_format_number(1 - p)}^{n - k}.",
+            (
+                f"Count success positions using {n}C{k}.",
+                "Exactly k successes can occur in that many unordered positions among n trials.",
+            ),
+            (
+                f"Multiply by p^k = {_format_number(p)}^{k}.",
+                "Independent successes multiply their probabilities.",
+            ),
+            (
+                f"Multiply by (1 - p)^(n - k) = {_format_number(1 - p)}^{n - k}.",
+                "The remaining trials must be failures, each with probability 1 - p.",
+            ),
         ],
     )
 
@@ -295,12 +378,23 @@ def _probability_binomial_simulation() -> None:
     output_path = _read_output_path("simulation_histogram.png")
     details = (
         "estimated P(X = k) = matching simulated outcomes / total simulations",
-        "Monte Carlo simulation repeats a random experiment many times to estimate probability.",
         [
-            f"Simulate {trials} experiments.",
-            f"Each experiment has {n} trials with success probability {_format_number(p)}.",
-            f"Count how often the number of successes equals {k}.",
-            "Save a histogram so the distribution shape can be inspected.",
+            (
+                f"Simulate {trials} experiments.",
+                "Monte Carlo estimates stabilize as the number of repeated trials increases.",
+            ),
+            (
+                f"Each experiment has {n} Bernoulli trials with p = {_format_number(p)}.",
+                "A binomial model requires independent trials with constant success probability.",
+            ),
+            (
+                f"Count outcomes where the success count is {k} and divide by {trials}.",
+                "Relative frequency estimates probability under repeated sampling.",
+            ),
+            (
+                "Save a histogram of simulated success counts.",
+                "The histogram shows the empirical distribution, which should resemble the binomial shape.",
+            ),
         ],
     )
 
@@ -319,10 +413,15 @@ def _function_polynomial_evaluation() -> None:
     x = _read_float("Enter x: ")
     details = (
         "Horner's method: result = result x x + next coefficient",
-        "Evaluate the polynomial efficiently from highest power to constant term.",
         [
-            f"Start with result = 0 and x = {_format_number(x)}.",
-            "For each coefficient, multiply the current result by x and add the coefficient.",
+            (
+                f"Start with result = 0 and x = {_format_number(x)}.",
+                "Horner's method builds the polynomial from highest power downward.",
+            ),
+            (
+                "For each coefficient, multiply the current result by x and add the coefficient.",
+                "This is algebraically equivalent to the expanded polynomial but avoids repeated powers.",
+            ),
         ],
     )
 
@@ -342,11 +441,19 @@ def _function_derivative() -> None:
 
     details = (
         "f'(x) is approximately (f(x + h) - f(x - h)) / (2h)",
-        "Estimate the slope using points just to the right and left of x.",
         [
-            f"Use x = {_format_number(x)} and h = {_format_number(step)}.",
-            "Evaluate the polynomial at x + h and x - h.",
-            "Divide the difference by 2h.",
+            (
+                f"Use x = {_format_number(x)} and h = {_format_number(step)}.",
+                "A small h samples the function close to the target point.",
+            ),
+            (
+                "Evaluate the polynomial at x + h and x - h.",
+                "Central difference uses points on both sides to reduce one-sided error.",
+            ),
+            (
+                "Divide the change in y by the horizontal distance 2h.",
+                "Gradient is rise over run, matching the derivative interpretation in AA HL.",
+            ),
         ],
     )
 
@@ -364,10 +471,15 @@ def _vector_dot_product() -> None:
     right = _read_vector("Enter vector b components: ")
     details = (
         "a . b = a1b1 + a2b2 + ... + anbn",
-        "Multiply matching components, then add the products.",
         [
-            "Check both vectors have the same number of components.",
-            "Multiply each matching pair and add.",
+            (
+                "Check both vectors have the same number of components.",
+                "Each component in a must pair with exactly one component in b.",
+            ),
+            (
+                "Multiply matching components and add the products.",
+                "This is the scalar product definition used for projections and angles.",
+            ),
         ],
     )
 
@@ -379,10 +491,15 @@ def _vector_cross_product() -> None:
     right = _read_vector("Enter 3D vector b components: ")
     details = (
         "a x b = [a2b3 - a3b2, a3b1 - a1b3, a1b2 - a2b1]",
-        "The cross product gives a vector perpendicular to both input vectors.",
         [
-            "Confirm both vectors have exactly 3 components.",
-            "Apply the 3D cross product component formulas.",
+            (
+                "Confirm both vectors have exactly 3 components.",
+                "The cross product is defined for 3D vectors in this course context.",
+            ),
+            (
+                "Apply the determinant-style component formulas.",
+                "The resulting vector is perpendicular to both original vectors.",
+            ),
         ],
     )
 
@@ -396,11 +513,19 @@ def _vector_magnitude() -> None:
     vector = _read_vector("Enter vector components: ")
     details = (
         "|a| = sqrt(a1^2 + a2^2 + ... + an^2)",
-        "Magnitude is the length of a vector.",
         [
-            "Square each component.",
-            "Add the squared components.",
-            "Take the square root.",
+            (
+                "Square each component.",
+                "Squaring measures each component's contribution to length without sign.",
+            ),
+            (
+                "Add the squared components.",
+                "This extends Pythagoras to vectors with any number of components.",
+            ),
+            (
+                "Take the square root.",
+                "The square root converts squared length back to actual length.",
+            ),
         ],
     )
 
@@ -412,11 +537,19 @@ def _vector_angle() -> None:
     right = _read_vector("Enter vector b components: ")
     details = (
         "cos(theta) = (a . b) / (|a||b|)",
-        "The angle measures the turn between the two vector directions.",
         [
-            "Find the dot product a . b.",
-            "Find both magnitudes |a| and |b|.",
-            "Use arccos to recover the angle in degrees.",
+            (
+                "Find the dot product a . b.",
+                "The scalar product connects vector components to the angle between vectors.",
+            ),
+            (
+                "Find both magnitudes |a| and |b|.",
+                "The formula compares direction after normalizing for vector lengths.",
+            ),
+            (
+                "Use arccos to recover the angle in degrees.",
+                "Cosine is inverted to get theta from the computed ratio.",
+            ),
         ],
     )
 
@@ -433,10 +566,15 @@ def _statistics_mean() -> None:
     values = _read_number_list("Enter data values: ")
     details = (
         "mean = sum of values / number of values",
-        "The mean is the balancing point or average of the data.",
         [
-            "Add all data values.",
-            f"Divide by the number of values, n = {len(values)}.",
+            (
+                "Add all data values.",
+                "The total combines all observations into one aggregate amount.",
+            ),
+            (
+                f"Divide by the number of values, n = {len(values)}.",
+                "Equal sharing of the total gives the arithmetic average.",
+            ),
         ],
     )
 
@@ -449,11 +587,19 @@ def _statistics_variance() -> None:
     divisor_text = "n - 1" if sample else "n"
     details = (
         f"variance = sum((x - mean)^2) / {divisor_text}",
-        "Variance measures spread by averaging squared distances from the mean.",
         [
-            "Find the mean.",
-            "Subtract the mean from each value and square each difference.",
-            f"Divide by {divisor_text}.",
+            (
+                "Find the mean.",
+                "Spread is measured relative to the central value.",
+            ),
+            (
+                "Subtract the mean from each value and square each difference.",
+                "Squaring removes signs and gives larger deviations more weight.",
+            ),
+            (
+                f"Divide by {divisor_text}.",
+                "Use n for a full population and n - 1 when estimating from a sample.",
+            ),
         ],
     )
 
@@ -468,10 +614,15 @@ def _statistics_standard_deviation() -> None:
     sample = _read_yes_no("Use sample standard deviation with denominator n - 1? (y/n): ")
     details = (
         "standard deviation = square root of variance",
-        "Standard deviation is a typical distance from the mean.",
         [
-            "Calculate the variance.",
-            "Take the square root so the answer uses the original data units.",
+            (
+                "Calculate the variance.",
+                "Variance is the average squared distance from the mean.",
+            ),
+            (
+                "Take the square root.",
+                "This returns the spread measure to the same units as the data.",
+            ),
         ],
     )
 
@@ -488,14 +639,23 @@ def _visualization_function() -> None:
     function_name, function = _read_common_function()
     x_min = _read_float("Enter minimum x: ")
     x_max = _read_float("Enter maximum x: ")
+    derivative_at = _read_optional_tangent_point()
     output_path = _read_output_path(f"{function_name}_graph.png")
     details = (
         "y = f(x)",
-        "A function graph shows how y changes as x moves across an interval.",
         [
-            f"Use the selected function: {function_name}.",
-            f"Calculate y-values from x = {_format_number(x_min)} to x = {_format_number(x_max)}.",
-            "Save the plotted curve as an image file.",
+            (
+                f"Use the selected function: {function_name}.",
+                "The graph represents the set of ordered pairs (x, f(x)).",
+            ),
+            (
+                f"Calculate y-values from x = {_format_number(x_min)} to x = {_format_number(x_max)}.",
+                "Sampling the interval gives enough points for matplotlib to draw the curve.",
+            ),
+            (
+                "Label endpoints, intercepts, and any requested tangent point.",
+                "These features support AA HL graph interpretation and gradient reasoning.",
+            ),
         ],
     )
 
@@ -504,6 +664,7 @@ def _visualization_function() -> None:
             function,
             x_min,
             x_max,
+            derivative_at=derivative_at,
             title=f"y = {function_name}",
             output_path=output_path,
         )
@@ -516,19 +677,34 @@ def _visualization_polynomial() -> None:
     coefficients = _read_coefficients()
     x_min = _read_float("Enter minimum x: ")
     x_max = _read_float("Enter maximum x: ")
+    derivative_at = _read_optional_tangent_point()
     output_path = _read_output_path("polynomial_graph.png")
     details = (
         "For coefficients [a,b,c], y = ax^2 + bx + c",
-        "A polynomial graph helps connect algebraic form with curve shape.",
         [
-            "Read coefficients from highest power to constant term.",
-            "Evaluate the polynomial across the selected x-range.",
-            "Save the plotted curve as an image file.",
+            (
+                "Read coefficients from highest power to constant term.",
+                "This matches standard polynomial notation.",
+            ),
+            (
+                "Evaluate the polynomial across the selected x-range.",
+                "Graphing many function values reveals turning points and intercept behavior.",
+            ),
+            (
+                "Save the plotted curve with labels and optional tangent.",
+                "Annotated plots make key features visible for exam-style analysis.",
+            ),
         ],
     )
 
     def action() -> None:
-        plot_polynomial(coefficients, x_min, x_max, output_path=output_path)
+        plot_polynomial(
+            coefficients,
+            x_min,
+            x_max,
+            derivative_at=derivative_at,
+            output_path=output_path,
+        )
         print(f"\nGraph saved to {output_path}")
 
     _run_calculation(action, details)
@@ -540,11 +716,19 @@ def _visualization_matrix() -> None:
     output_path = _read_output_path("matrix_transformation.png")
     details = (
         "A transforms each point v into Av",
-        "A 2x2 matrix can stretch, rotate, shear, or reflect points in the plane.",
         [
-            "Plot the original unit square and basis vectors.",
-            "Multiply each point by the matrix.",
-            "Plot the transformed shape for comparison.",
+            (
+                "Plot the original unit square and basis vectors in the BEFORE panel.",
+                "The original shape gives a geometric reference for the transformation.",
+            ),
+            (
+                "Multiply each vertex and basis vector by the 2x2 matrix.",
+                "A matrix transformation maps every point v to Av.",
+            ),
+            (
+                "Plot the transformed shape in the AFTER panel.",
+                "Comparing before and after shows stretch, shear, reflection, or rotation effects.",
+            ),
         ],
     )
 
@@ -557,8 +741,8 @@ def _visualization_matrix() -> None:
 
 def _read_matrix() -> Matrix:
     """Read matrix dimensions and row values from the user."""
-    rows = _read_positive_int("Number of rows: ")
-    columns = _read_positive_int("Number of columns: ")
+    rows = _read_positive_int("Number of rows: ", maximum=10)
+    columns = _read_positive_int("Number of columns: ", maximum=10)
 
     matrix: list[list[float]] = []
     for row_number in range(1, rows + 1):
@@ -566,6 +750,9 @@ def _read_matrix() -> Matrix:
             row_text = input(
                 f"Row {row_number} ({columns} numbers separated by spaces): "
             ).strip()
+            if not row_text:
+                print("Matrix rows cannot be empty.")
+                continue
 
             try:
                 row = [float(value) for value in row_text.split()]
@@ -611,19 +798,26 @@ def _read_number_list(prompt: str) -> list[float]:
         return values
 
 
-def _read_positive_int(prompt: str) -> int:
+def _read_positive_int(prompt: str, maximum: int | None = None) -> int:
     """Read a positive integer, retrying until valid."""
     while True:
         value = _read_int(prompt)
-        if value > 0:
-            return value
-        print("Please enter a positive whole number.")
+        if value <= 0:
+            print("Please enter a positive whole number.")
+            continue
+        if maximum is not None and value > maximum:
+            print(f"Please enter a value no larger than {maximum}.")
+            continue
+        return value
 
 
 def _read_int(prompt: str) -> int:
     """Read an integer, retrying until the input is valid."""
     while True:
         text = input(prompt).strip()
+        if not text:
+            print("Input cannot be empty. Please enter a whole number.")
+            continue
 
         try:
             return int(text)
@@ -639,6 +833,10 @@ def _read_float(prompt: str, default: float | None = None) -> float:
         if text == "" and default is not None:
             return default
 
+        if not text:
+            print("Input cannot be empty. Please enter a number.")
+            continue
+
         try:
             return float(text)
         except ValueError:
@@ -649,6 +847,9 @@ def _read_yes_no(prompt: str) -> bool:
     """Read a yes/no answer."""
     while True:
         text = input(prompt).strip().lower()
+        if not text:
+            print("Input cannot be empty. Please enter y or n.")
+            continue
 
         if text in {"y", "yes"}:
             return True
@@ -688,6 +889,13 @@ def _read_output_path(default_filename: str) -> str:
     return text or default_path
 
 
+def _read_optional_tangent_point() -> float | None:
+    """Read an optional x-value for tangent-line visualization."""
+    if not _read_yes_no("Add tangent line using derivative approximation? (y/n): "):
+        return None
+    return _read_float("Enter tangent x-value: ")
+
+
 def _run_calculation(
     action: Callable[[], None],
     learning_details: LearningDetails,
@@ -695,9 +903,9 @@ def _run_calculation(
     """Run one calculation and optionally print learning details."""
     try:
         action()
-        if LEARNING_MODE:
-            formula, explanation, steps = learning_details
-            _print_learning_details(formula, explanation, steps)
+        if LEARNING_MODE and not EXAM_MODE:
+            formula, steps = learning_details
+            _print_learning_details(formula, steps)
     except (OSError, TypeError, ValueError) as error:
         print(f"\nError: {error}")
     finally:
@@ -706,16 +914,15 @@ def _run_calculation(
 
 def _print_learning_details(
     formula: str,
-    explanation: str,
-    steps: list[str],
+    steps: list[LearningStep],
 ) -> None:
     """Print formula, explanation, and calculation steps."""
-    print("\nLearning mode")
+    print("\nLearning mode explanation")
     print(f"Formula: {formula}")
-    print(f"Meaning: {explanation}")
-    print("Steps:")
-    for index, step in enumerate(steps, start=1):
+    print("Derivation:")
+    for index, (step, why_valid) in enumerate(steps, start=1):
         print(f"{index}. {step}")
+        print(f"   Why valid: {why_valid}")
 
 
 def _print_header(title: str) -> None:
@@ -756,8 +963,32 @@ def _toggle_learning_mode() -> None:
     global LEARNING_MODE
 
     LEARNING_MODE = not LEARNING_MODE
+    if LEARNING_MODE:
+        _set_exam_mode(False)
     print(f"Learning mode {'ON' if LEARNING_MODE else 'OFF'}.")
     _pause()
+
+
+def _toggle_exam_mode() -> None:
+    _set_exam_mode(not EXAM_MODE)
+    print(f"Exam mode {'ON' if EXAM_MODE else 'OFF'}.")
+    _pause()
+
+
+def _set_exam_mode(enabled: bool) -> None:
+    global EXAM_MODE, LEARNING_MODE
+
+    EXAM_MODE = enabled
+    if enabled:
+        LEARNING_MODE = False
+
+
+def _current_mode_label() -> str:
+    if EXAM_MODE:
+        return "EXAM MODE - final answers only"
+    if LEARNING_MODE:
+        return "Learning mode ON"
+    return "Fast mode"
 
 
 def _pause() -> None:

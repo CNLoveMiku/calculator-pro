@@ -1,5 +1,27 @@
 # Release Notes
 
+## v2.0.1 Quality Patch
+
+Enhances the v2.0.0 educational experience without changing the public package
+structure.
+
+### Fixes and Enhancements
+
+- Learning Mode now prints formula, derivation steps, and a short "why valid"
+  explanation for each CLI calculation.
+- Added Exam Mode for final-answer-only checking under exam-style conditions.
+- Main CLI menu is grouped more intuitively around Algebra, Probability,
+  Visualization, and Learning Mode Settings while keeping legacy tool menus.
+- Function and polynomial plots can include tangent lines using derivative
+  approximation.
+- Function plots label key points such as endpoints, approximate intercepts,
+  and tangent points.
+- Matrix transformation visualization now shows separate BEFORE and AFTER
+  geometric panels.
+- Input handling is stricter for empty input, invalid matrix sizes, and
+  non-numeric entries.
+- Added tests for CLI Learning Mode and Exam Mode behavior.
+
 ## v2.0.0
 
 IB Math AA HL ToolBox v2.0.0 upgrades the project from a calculation-focused

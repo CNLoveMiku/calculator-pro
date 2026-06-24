@@ -13,15 +13,22 @@ and plain-English explanations.
 - Visualization layer with matplotlib
   - Plot common functions, such as `y = x^2`, `sin(x)`, and `cos(x)`
   - Plot polynomial graphs from coefficients
-  - Save basic 2x2 matrix transformation diagrams
+  - Add optional tangent lines using derivative approximation
+  - Label endpoints, approximate x-intercepts, and tangent points
+  - Save 2x2 matrix transformation diagrams with BEFORE and AFTER panels
 - Probability simulation engine
   - Monte Carlo probability estimation
   - Binomial trial simulation
   - Histogram output for simulation results
 - Enhanced learning mode
   - Formula shown for each CLI calculation
-  - Plain-English explanation of the method
-  - Step-by-step guidance for calculations and plots
+  - Step-by-step derivation
+  - Short explanation of why each step is valid
+  - IB Math AA HL exam-style method language
+- Exam Mode
+  - Hides step-by-step solutions
+  - Shows final answers only
+  - Simulates exam-condition checking
 - Extended vector module
   - Dot product
   - Cross product
@@ -102,14 +109,14 @@ Main menu:
 ```text
 IB Math AA HL ToolBox
 ---------------------
-Learning mode: OFF
-1. Matrix tools
+Mode: Fast mode
+1. Algebra tools
 2. Probability tools
-3. Function tools
-4. Vector tools
+3. Visualization
+4. Learning mode settings
 5. Statistics tools
-6. Visualization tools
-7. Toggle learning mode ON/OFF
+6. Matrix tools
+7. Vector tools
 0. Exit
 ```
 
@@ -128,13 +135,29 @@ A + B =
 ```text
 P(X = k) = 0.3456
 
-Learning mode
+Learning mode explanation
 Formula: P(X = k) = nCk x p^k x (1 - p)^(n - k)
-Meaning: Use this for exactly k successes in n independent trials.
-Steps:
-1. Count ways to place the successes: 5C2.
+Derivation:
+1. Count success positions using 5C2.
+   Why valid: Exactly k successes can occur in that many unordered positions among n trials.
 2. Multiply by p^k = 0.4^2.
+   Why valid: Independent successes multiply their probabilities.
 3. Multiply by (1 - p)^(n - k) = 0.6^3.
+   Why valid: The remaining trials must be failures, each with probability 1 - p.
+```
+
+### Exam Mode
+
+Exam Mode is controlled from Learning mode settings:
+
+```text
+Mode: EXAM MODE - final answers only
+
+mean = 2
+```
+
+In Exam Mode, formulas and derivations are hidden so the CLI behaves like a
+final-answer checking tool.
 ```
 
 ### Visualization Output
@@ -147,17 +170,17 @@ Histogram saved to outputs/simulation_histogram.png
 Matrix transformation plot saved to outputs/matrix_transformation.png
 ```
 
-ASCII sketch of a function plot workflow:
+ASCII sketch of a function plot workflow with tangent:
 
 ```text
-coefficients -> evaluate y-values -> matplotlib figure -> PNG file
-     [1 0 -4]          y = x^2 - 4          curve          outputs/polynomial_graph.png
+coefficients -> evaluate y-values -> optional tangent -> labeled PNG
+     [1 0 -4]          y = x^2 - 4       slope at x=a     outputs/polynomial_graph.png
 ```
 
 ASCII sketch of matrix transformation visualization:
 
 ```text
-original unit square      matrix A      transformed square
+BEFORE panel              matrix A      AFTER panel
  (0,1)----(1,1)             [a b]          A(0,1)----A(1,1)
    |        |       -->     [c d]     -->    |          |
  (0,0)----(1,0)                            A(0,0)----A(1,0)
@@ -174,7 +197,13 @@ print(magnitude([3, 4]))
 print(angle_between_vectors([1, 0], [0, 1], degrees=True))
 print(estimate_binomial_probability(5, 2, 0.4, 1000, seed=42))
 
-plot_polynomial([1, 0, -4], -5, 5, output_path="outputs/parabola.png")
+plot_polynomial(
+    [1, 0, -4],
+    -5,
+    5,
+    derivative_at=1,
+    output_path="outputs/parabola.png",
+)
 ```
 
 ## Running Tests
@@ -185,7 +214,7 @@ python -m pytest
 
 The test suite covers matrix operations, probability functions, Monte Carlo
 simulation, vector operations, visualization file output, and validation edge
-cases.
+cases, including CLI Learning Mode and Exam Mode behavior.
 
 ## Project Structure
 
@@ -210,13 +239,14 @@ calculator-pro/
     ├── test_matrix_operations.py
     ├── test_probability_functions.py
     ├── test_probability_simulation.py
+    ├── test_cli_modes.py
     ├── test_vectors.py
     └── test_visualization.py
 ```
 
 ## Release Status
 
-Version: `v2.0.0`
+Version: `v2.0.1`
 
 ## License
 
