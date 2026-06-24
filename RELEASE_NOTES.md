@@ -1,5 +1,52 @@
 # Release Notes
 
+## v2.0.0
+
+IB Math AA HL ToolBox v2.0.0 upgrades the project from a calculation-focused
+CLI into a more visual and simulation-ready educational toolbox.
+
+### New Features
+
+- Visualization layer powered by matplotlib
+  - Plot common functions such as `y = x`, `y = x^2`, `sin(x)`, and `cos(x)`
+  - Plot polynomial graphs from coefficient input
+  - Save basic 2x2 matrix transformation diagrams
+- Probability simulation engine
+  - Generic Monte Carlo probability estimation
+  - Binomial trial simulation
+  - Exact-success binomial probability estimation by simulation
+  - Histogram output for simulation results
+- Enhanced vector module
+  - Dot product
+  - 3D cross product
+  - Magnitude
+  - Angle between vectors in radians or degrees
+- Improved CLI
+  - New Visualization tools menu
+  - Learning mode toggle now explicitly reads ON/OFF
+  - Monte Carlo simulation added to Probability tools
+  - Vector magnitude and angle calculations added to Vector tools
+
+### Improvements Over v1.0.0
+
+- Adds visual outputs for polynomial graphs, function graphs, histograms, and matrix transformations
+- Expands educational coverage for IB Math AA HL vectors and probability simulation
+- Keeps backward-compatible public functions from v1.0.0
+- Updates package metadata to `2.0.0`
+- Adds matplotlib as a runtime dependency
+- Extends pytest coverage for vectors, simulation, and visualization
+
+### Validation
+
+- `python -m pytest`
+- `python main.py`
+
+### Notes
+
+- Visualization output is saved to PNG files by default from the CLI.
+- The CLI remains text-based; no GUI is included in v2.0.0.
+- Learning mode gives concise method explanations, not full symbolic derivations.
+
 ## v1.0.0
 
 Initial stable GitHub release of IB Math AA HL ToolBox.
@@ -21,19 +68,3 @@ Initial stable GitHub release of IB Math AA HL ToolBox.
 
 - `python -m pytest`
 - `python main.py`
-
-### Known Scope
-
-- No GUI in v1.0.0
-- No graphing or symbolic algebra
-- Learning-mode steps are concise explanations, not full handwritten-style derivations
-
-### Suggested v2.0 Improvements
-
-- Add graph visualization for functions, derivatives, and probability distributions
-- Add AI-guided explanation mode for adaptive hints and worked examples
-- Add symbolic algebra support for exact simplification where appropriate
-- Add exportable solution reports as Markdown or PDF
-- Add interactive plots for matrices, vectors, and statistics
-- Add a GUI or web interface while keeping the CLI available
-- Expand test coverage to CLI flows, vectors, statistics, and function tools

@@ -1,66 +1,65 @@
 # IB Math AA HL ToolBox
 
-IB Math AA HL ToolBox is a clean, text-based Python calculator for students
+IB Math AA HL ToolBox is a modular Python command-line calculator for students
 practicing IB Mathematics: Analysis and Approaches Higher Level.
 
-The project focuses on transparent mathematical methods rather than black-box
-answers. It includes a fast mode for quick calculations and a learning mode
-that prints the formula, a plain-English explanation, and calculation steps.
+Version 2.0.0 adds graphing, Monte Carlo probability simulation, stronger
+vector tools, and a more complete learning mode. The project is intentionally
+transparent: functions are small, typed where useful, and paired with formulas
+and plain-English explanations.
 
-## Features
+## v2.0.0 Features
 
-- Matrix tools
-  - Matrix addition
-  - Matrix multiplication
-  - Recursive determinant calculation with a 2x2 base case
-  - Matrix inverse for 2x2 and larger square matrices
-- Probability tools
-  - Factorial
-  - Permutations, `nPr`
-  - Combinations, `nCr`
-  - Conditional probability
-  - Exact binomial probability, `P(X = k)`
-- Function tools
-  - Polynomial evaluation using Horner's method
-  - Numerical derivative approximation using central difference
-- Vector tools
+- Visualization layer with matplotlib
+  - Plot common functions, such as `y = x^2`, `sin(x)`, and `cos(x)`
+  - Plot polynomial graphs from coefficients
+  - Save basic 2x2 matrix transformation diagrams
+- Probability simulation engine
+  - Monte Carlo probability estimation
+  - Binomial trial simulation
+  - Histogram output for simulation results
+- Enhanced learning mode
+  - Formula shown for each CLI calculation
+  - Plain-English explanation of the method
+  - Step-by-step guidance for calculations and plots
+- Extended vector module
   - Dot product
-  - 3D cross product
-- Statistics tools
-  - Mean
-  - Variance
-  - Standard deviation
-- CLI modes
-  - Fast mode for concise answers
-  - Learning mode for formulas, explanations, and step-by-step output
+  - Cross product
+  - Magnitude
+  - Angle between vectors
+- Existing v1 tools remain available
+  - Matrix operations
+  - Probability and combinatorics
+  - Polynomial evaluation
+  - Numerical derivative approximation
+  - Simple statistics
 
 ## IB Math AA HL Relevance
 
-This toolbox maps directly to common IB Math AA HL topics:
+This toolbox maps to common IB Math AA HL work:
 
-- Algebra and functions: polynomial evaluation and numerical slopes
-- Calculus: derivative approximation and interpretation of gradients
-- Vectors: scalar product and vector product in 3D
-- Probability: counting methods, conditional probability, and binomial models
-- Statistics: measures of center and spread
-- Matrices: operations, determinants, invertibility, and transformations
+- Algebra and functions: polynomial evaluation, graphing, roots and curve shape
+- Calculus: numerical derivative approximation and gradient interpretation
+- Vectors: scalar product, vector product, magnitude, and angle
+- Probability: counting methods, conditional probability, binomial models, and simulation
+- Statistics: mean, variance, standard deviation, and distribution shape
+- Matrices: operations, determinants, inverses, and 2D transformations
 
-The goal is to support revision, checking work, and understanding method steps.
-Students should still follow their teacher's guidance and IB exam calculator
-rules.
+The tool is designed for revision and method-checking. Students should still
+follow classroom expectations and IB exam calculator rules.
 
 ## Requirements
 
 - Python 3.11 or newer recommended
-- No runtime third-party dependencies
-- `pytest` is required only for running tests
+- matplotlib for visualization
+- pytest for tests
 
 ## Installation
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/<your-username>/calculator-pro.git
+git clone https://github.com/CNLoveMiku/calculator-pro.git
 cd calculator-pro
 ```
 
@@ -78,7 +77,7 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-Install test dependencies:
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -98,54 +97,33 @@ Run the CLI directly:
 python main.py
 ```
 
-After launching, choose from the main menu:
+Main menu:
 
 ```text
 IB Math AA HL ToolBox
 ---------------------
-Mode: fast
+Learning mode: OFF
 1. Matrix tools
 2. Probability tools
 3. Function tools
 4. Vector tools
 5. Statistics tools
-6. Switch fast/learning mode
+6. Visualization tools
+7. Toggle learning mode ON/OFF
 0. Exit
 ```
 
-### Example: Matrix Addition
+## CLI Examples
+
+### Matrix Addition
 
 ```text
-Select an option: 1
-Select an option: 1
-
-Enter the first matrix.
-Number of rows: 2
-Number of columns: 2
-Row 1 (2 numbers separated by spaces): 1 2
-Row 2 (2 numbers separated by spaces): 3 4
-
-Enter the second matrix.
-Number of rows: 2
-Number of columns: 2
-Row 1 (2 numbers separated by spaces): 5 6
-Row 2 (2 numbers separated by spaces): 7 8
-
 A + B =
 [ 6  8 ]
 [ 10  12 ]
 ```
 
-### Example: Learning Mode
-
-Switch to learning mode from the main menu:
-
-```text
-Select an option: 6
-Mode switched to learning.
-```
-
-For a binomial probability calculation, learning mode adds method context:
+### Learning Mode
 
 ```text
 P(X = k) = 0.3456
@@ -159,18 +137,44 @@ Steps:
 3. Multiply by (1 - p)^(n - k) = 0.6^3.
 ```
 
-### Example: Importing Functions
+### Visualization Output
+
+The CLI saves plots to `outputs/` by default:
+
+```text
+Graph saved to outputs/polynomial_graph.png
+Histogram saved to outputs/simulation_histogram.png
+Matrix transformation plot saved to outputs/matrix_transformation.png
+```
+
+ASCII sketch of a function plot workflow:
+
+```text
+coefficients -> evaluate y-values -> matplotlib figure -> PNG file
+     [1 0 -4]          y = x^2 - 4          curve          outputs/polynomial_graph.png
+```
+
+ASCII sketch of matrix transformation visualization:
+
+```text
+original unit square      matrix A      transformed square
+ (0,1)----(1,1)             [a b]          A(0,1)----A(1,1)
+   |        |       -->     [c d]     -->    |          |
+ (0,0)----(1,0)                            A(0,0)----A(1,0)
+```
+
+## Python API Examples
 
 ```python
-from calculator_pro.matrix import determinant
-from calculator_pro.probability import combinations
-from calculator_pro.statistics import standard_deviation
-from calculator_pro.vectors import dot_product
+from calculator_pro.probability import estimate_binomial_probability
+from calculator_pro.vectors import angle_between_vectors, magnitude
+from calculator_pro.visualization import plot_polynomial
 
-print(determinant([[1, 2], [3, 4]]))
-print(combinations(5, 2))
-print(standard_deviation([1, 2, 3, 4]))
-print(dot_product([1, 2, 3], [4, 5, 6]))
+print(magnitude([3, 4]))
+print(angle_between_vectors([1, 0], [0, 1], degrees=True))
+print(estimate_binomial_probability(5, 2, 0.4, 1000, seed=42))
+
+plot_polynomial([1, 0, -4], -5, 5, output_path="outputs/parabola.png")
 ```
 
 ## Running Tests
@@ -179,9 +183,9 @@ print(dot_product([1, 2, 3], [4, 5, 6]))
 python -m pytest
 ```
 
-The v1.0.0 test suite covers matrix operations, probability functions, and
-edge cases such as invalid dimensions, negative values, impossible
-probabilities, and singular matrices.
+The test suite covers matrix operations, probability functions, Monte Carlo
+simulation, vector operations, visualization file output, and validation edge
+cases.
 
 ## Project Structure
 
@@ -200,19 +204,19 @@ calculator-pro/
 │       ├── matrix/
 │       ├── probability/
 │       ├── statistics/
-│       └── vectors/
+│       ├── vectors/
+│       └── visualization/
 └── tests/
-    ├── conftest.py
     ├── test_matrix_operations.py
-    └── test_probability_functions.py
+    ├── test_probability_functions.py
+    ├── test_probability_simulation.py
+    ├── test_vectors.py
+    └── test_visualization.py
 ```
 
 ## Release Status
 
-Version: `v1.0.0`
-
-This release is ready for GitHub publication as a lightweight educational CLI
-toolbox.
+Version: `v2.0.0`
 
 ## License
 

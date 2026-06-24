@@ -1,6 +1,7 @@
 """Text-based CLI menu for the IB Math AA HL ToolBox."""
 
 from collections.abc import Callable
+from math import cos, sin
 
 from calculator_pro.functions import approximate_derivative, evaluate_polynomial
 from calculator_pro.matrix import add, determinant, inverse, multiply
@@ -10,10 +11,22 @@ from calculator_pro.probability import (
     combinations,
     conditional_probability,
     factorial,
+    plot_simulation_histogram,
     permutations,
+    simulate_binomial_trials,
 )
 from calculator_pro.statistics import mean, standard_deviation, variance
-from calculator_pro.vectors import cross_product, dot_product
+from calculator_pro.vectors import (
+    angle_between_vectors,
+    cross_product,
+    dot_product,
+    magnitude,
+)
+from calculator_pro.visualization import (
+    plot_function,
+    plot_matrix_transformation,
+    plot_polynomial,
+)
 
 
 MenuHandler = Callable[[], None]
@@ -30,7 +43,8 @@ def run_cli() -> None:
         "3": ("Function tools", _function_menu),
         "4": ("Vector tools", _vector_menu),
         "5": ("Statistics tools", _statistics_menu),
-        "6": ("Switch fast/learning mode", _toggle_learning_mode),
+        "6": ("Visualization tools", _visualization_menu),
+        "7": ("Toggle learning mode ON/OFF", _toggle_learning_mode),
         "0": ("Exit", _exit_menu),
     }
 
@@ -56,6 +70,7 @@ def _probability_menu() -> None:
         "3": ("Combinations nCr", _probability_combinations),
         "4": ("Conditional probability", _probability_conditional),
         "5": ("Binomial probability P(X = k)", _probability_binomial),
+        "6": ("Monte Carlo binomial simulation", _probability_binomial_simulation),
         "0": ("Back", _back_menu),
     }
 
@@ -76,6 +91,8 @@ def _vector_menu() -> None:
     actions: dict[str, tuple[str, MenuHandler]] = {
         "1": ("Dot product", _vector_dot_product),
         "2": ("Cross product", _vector_cross_product),
+        "3": ("Magnitude", _vector_magnitude),
+        "4": ("Angle between vectors", _vector_angle),
         "0": ("Back", _back_menu),
     }
 
@@ -93,11 +110,22 @@ def _statistics_menu() -> None:
     _run_menu("Statistics tools", actions)
 
 
+def _visualization_menu() -> None:
+    actions: dict[str, tuple[str, MenuHandler]] = {
+        "1": ("Plot common function y = f(x)", _visualization_function),
+        "2": ("Plot polynomial graph", _visualization_polynomial),
+        "3": ("Plot 2x2 matrix transformation", _visualization_matrix),
+        "0": ("Back", _back_menu),
+    }
+
+    _run_menu("Visualization tools", actions)
+
+
 def _run_menu(title: str, actions: dict[str, tuple[str, MenuHandler]]) -> None:
     """Display a menu and run actions until the user chooses 0."""
     while True:
         _print_header(title)
-        print(f"Mode: {'learning' if LEARNING_MODE else 'fast'}")
+        print(f"Learning mode: {'ON' if LEARNING_MODE else 'OFF'}")
         for key, (label, _) in actions.items():
             print(f"{key}. {label}")
 
@@ -259,6 +287,33 @@ def _probability_binomial() -> None:
     )
 
 
+def _probability_binomial_simulation() -> None:
+    n = _read_int("Enter number of trials per experiment n: ")
+    k = _read_int("Enter exact successes k: ")
+    p = _read_float("Enter success probability p: ")
+    trials = _read_positive_int("Enter Monte Carlo simulation count: ")
+    output_path = _read_output_path("simulation_histogram.png")
+    details = (
+        "estimated P(X = k) = matching simulated outcomes / total simulations",
+        "Monte Carlo simulation repeats a random experiment many times to estimate probability.",
+        [
+            f"Simulate {trials} experiments.",
+            f"Each experiment has {n} trials with success probability {_format_number(p)}.",
+            f"Count how often the number of successes equals {k}.",
+            "Save a histogram so the distribution shape can be inspected.",
+        ],
+    )
+
+    def action() -> None:
+        simulated_values = simulate_binomial_trials(n, p, trials)
+        estimate = sum(1 for value in simulated_values if value == k) / trials
+        plot_simulation_histogram(simulated_values, output_path=output_path)
+        _print_value("estimated P(X = k)", estimate)
+        print(f"Histogram saved to {output_path}")
+
+    _run_calculation(action, details)
+
+
 def _function_polynomial_evaluation() -> None:
     coefficients = _read_coefficients()
     x = _read_float("Enter x: ")
@@ -337,6 +392,43 @@ def _vector_cross_product() -> None:
     )
 
 
+def _vector_magnitude() -> None:
+    vector = _read_vector("Enter vector components: ")
+    details = (
+        "|a| = sqrt(a1^2 + a2^2 + ... + an^2)",
+        "Magnitude is the length of a vector.",
+        [
+            "Square each component.",
+            "Add the squared components.",
+            "Take the square root.",
+        ],
+    )
+
+    _run_calculation(lambda: _print_value("|a|", magnitude(vector)), details)
+
+
+def _vector_angle() -> None:
+    left = _read_vector("Enter vector a components: ")
+    right = _read_vector("Enter vector b components: ")
+    details = (
+        "cos(theta) = (a . b) / (|a||b|)",
+        "The angle measures the turn between the two vector directions.",
+        [
+            "Find the dot product a . b.",
+            "Find both magnitudes |a| and |b|.",
+            "Use arccos to recover the angle in degrees.",
+        ],
+    )
+
+    _run_calculation(
+        lambda: _print_value(
+            "angle between vectors",
+            angle_between_vectors(left, right, degrees=True),
+        ),
+        details,
+    )
+
+
 def _statistics_mean() -> None:
     values = _read_number_list("Enter data values: ")
     details = (
@@ -390,6 +482,77 @@ def _statistics_standard_deviation() -> None:
         ),
         details,
     )
+
+
+def _visualization_function() -> None:
+    function_name, function = _read_common_function()
+    x_min = _read_float("Enter minimum x: ")
+    x_max = _read_float("Enter maximum x: ")
+    output_path = _read_output_path(f"{function_name}_graph.png")
+    details = (
+        "y = f(x)",
+        "A function graph shows how y changes as x moves across an interval.",
+        [
+            f"Use the selected function: {function_name}.",
+            f"Calculate y-values from x = {_format_number(x_min)} to x = {_format_number(x_max)}.",
+            "Save the plotted curve as an image file.",
+        ],
+    )
+
+    def action() -> None:
+        plot_function(
+            function,
+            x_min,
+            x_max,
+            title=f"y = {function_name}",
+            output_path=output_path,
+        )
+        print(f"\nGraph saved to {output_path}")
+
+    _run_calculation(action, details)
+
+
+def _visualization_polynomial() -> None:
+    coefficients = _read_coefficients()
+    x_min = _read_float("Enter minimum x: ")
+    x_max = _read_float("Enter maximum x: ")
+    output_path = _read_output_path("polynomial_graph.png")
+    details = (
+        "For coefficients [a,b,c], y = ax^2 + bx + c",
+        "A polynomial graph helps connect algebraic form with curve shape.",
+        [
+            "Read coefficients from highest power to constant term.",
+            "Evaluate the polynomial across the selected x-range.",
+            "Save the plotted curve as an image file.",
+        ],
+    )
+
+    def action() -> None:
+        plot_polynomial(coefficients, x_min, x_max, output_path=output_path)
+        print(f"\nGraph saved to {output_path}")
+
+    _run_calculation(action, details)
+
+
+def _visualization_matrix() -> None:
+    print("\nEnter a 2x2 transformation matrix.")
+    matrix = _read_matrix()
+    output_path = _read_output_path("matrix_transformation.png")
+    details = (
+        "A transforms each point v into Av",
+        "A 2x2 matrix can stretch, rotate, shear, or reflect points in the plane.",
+        [
+            "Plot the original unit square and basis vectors.",
+            "Multiply each point by the matrix.",
+            "Plot the transformed shape for comparison.",
+        ],
+    )
+
+    def action() -> None:
+        plot_matrix_transformation(matrix, output_path=output_path)
+        print(f"\nMatrix transformation plot saved to {output_path}")
+
+    _run_calculation(action, details)
 
 
 def _read_matrix() -> Matrix:
@@ -495,6 +658,36 @@ def _read_yes_no(prompt: str) -> bool:
         print("Please enter y or n.")
 
 
+def _read_common_function() -> tuple[str, Callable[[float], float]]:
+    """Read a simple built-in function choice for graphing."""
+    functions: dict[str, tuple[str, Callable[[float], float]]] = {
+        "1": ("x", lambda x: x),
+        "2": ("x^2", lambda x: x**2),
+        "3": ("x^3", lambda x: x**3),
+        "4": ("sin(x)", sin),
+        "5": ("cos(x)", cos),
+    }
+
+    while True:
+        print("\nChoose a function to plot:")
+        for key, (label, _) in functions.items():
+            print(f"{key}. y = {label}")
+
+        choice = input("Select a function: ").strip()
+        function = functions.get(choice)
+        if function is not None:
+            return function
+
+        print("Invalid option. Please enter one of the listed numbers.")
+
+
+def _read_output_path(default_filename: str) -> str:
+    """Read an output image path, defaulting to outputs/default_filename."""
+    default_path = f"outputs/{default_filename}"
+    text = input(f"Output image path [{default_path}]: ").strip()
+    return text or default_path
+
+
 def _run_calculation(
     action: Callable[[], None],
     learning_details: LearningDetails,
@@ -505,7 +698,7 @@ def _run_calculation(
         if LEARNING_MODE:
             formula, explanation, steps = learning_details
             _print_learning_details(formula, explanation, steps)
-    except (TypeError, ValueError) as error:
+    except (OSError, TypeError, ValueError) as error:
         print(f"\nError: {error}")
     finally:
         _pause()
@@ -563,7 +756,7 @@ def _toggle_learning_mode() -> None:
     global LEARNING_MODE
 
     LEARNING_MODE = not LEARNING_MODE
-    print(f"Mode switched to {'learning' if LEARNING_MODE else 'fast'}.")
+    print(f"Learning mode {'ON' if LEARNING_MODE else 'OFF'}.")
     _pause()
 
 

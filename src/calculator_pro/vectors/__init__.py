@@ -1,5 +1,10 @@
 """Vector operation tools."""
 
-from calculator_pro.vectors.operations import cross_product, dot_product
+from calculator_pro.vectors.operations import (
+    angle_between_vectors,
+    cross_product,
+    dot_product,
+    magnitude,
+)
 
-__all__ = ["cross_product", "dot_product"]
+__all__ = ["angle_between_vectors", "cross_product", "dot_product", "magnitude"]
