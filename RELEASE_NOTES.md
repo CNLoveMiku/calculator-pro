@@ -1,5 +1,50 @@
 # Release Notes
 
+## v3.0.0
+
+IB Math Toolbox v3.0.0 upgrades `calculator-pro` into a portfolio-grade
+IB Math + AI learning system.
+
+### New Core Capabilities
+
+- AI Explanation Engine
+  - Generates intuitive explanations, formal mathematical solutions, and IB exam strategy tips.
+  - Uses `OPENAI_API_KEY` when available.
+  - Falls back automatically to rule-based explanations when no API key exists.
+- Interactive Graph System
+  - Accepts user-entered expressions such as `x^2 - 4`, `sin(x)`, and `exp(-x^2)`.
+  - Plots function curve and numerical derivative curve.
+  - Estimates roots, maxima, and minima.
+  - Supports zoom-like replotting with additional graph panels.
+- IB Math Study Mode
+  - Adds a structured five-step study flow:
+    concept introduction, guided example, practice question, solution check, reflection.
+- Export System
+  - Exports solution reports as PDF.
+  - Includes problem statement, final answer, explanation, steps, and optional graph images.
+- System Design Upgrade
+  - Adds clean architecture layers: `core`, `ui`, `visualization`, `ai`, `export`, and `study`.
+  - Introduces a reusable menu controller for CLI flow.
+
+### Improvements Over v2.0.1
+
+- Learning Mode now includes AI/rule-based explanations in addition to formula and derivation.
+- Visualization supports user-entered functions and derivative analysis.
+- Study Session mode supports educational product flow rather than isolated calculations only.
+- PDF export turns solutions and graphs into reusable study artifacts.
+- Test coverage expanded for AI fallback, expression safety, graph analysis, study sessions, and PDF export.
+
+### Validation
+
+- `python -m pytest`
+- `python main.py`
+
+### Compatibility
+
+- Existing v2 calculation modules and imports remain available.
+- CLI remains text-based.
+- AI is optional; no API key is required for local use.
+
 ## v2.0.1 Quality Patch
 
 Enhances the v2.0.0 educational experience without changing the public package
@@ -27,66 +72,6 @@ structure.
 IB Math AA HL ToolBox v2.0.0 upgrades the project from a calculation-focused
 CLI into a more visual and simulation-ready educational toolbox.
 
-### New Features
-
-- Visualization layer powered by matplotlib
-  - Plot common functions such as `y = x`, `y = x^2`, `sin(x)`, and `cos(x)`
-  - Plot polynomial graphs from coefficient input
-  - Save basic 2x2 matrix transformation diagrams
-- Probability simulation engine
-  - Generic Monte Carlo probability estimation
-  - Binomial trial simulation
-  - Exact-success binomial probability estimation by simulation
-  - Histogram output for simulation results
-- Enhanced vector module
-  - Dot product
-  - 3D cross product
-  - Magnitude
-  - Angle between vectors in radians or degrees
-- Improved CLI
-  - New Visualization tools menu
-  - Learning mode toggle now explicitly reads ON/OFF
-  - Monte Carlo simulation added to Probability tools
-  - Vector magnitude and angle calculations added to Vector tools
-
-### Improvements Over v1.0.0
-
-- Adds visual outputs for polynomial graphs, function graphs, histograms, and matrix transformations
-- Expands educational coverage for IB Math AA HL vectors and probability simulation
-- Keeps backward-compatible public functions from v1.0.0
-- Updates package metadata to `2.0.0`
-- Adds matplotlib as a runtime dependency
-- Extends pytest coverage for vectors, simulation, and visualization
-
-### Validation
-
-- `python -m pytest`
-- `python main.py`
-
-### Notes
-
-- Visualization output is saved to PNG files by default from the CLI.
-- The CLI remains text-based; no GUI is included in v2.0.0.
-- Learning mode gives concise method explanations, not full symbolic derivations.
-
 ## v1.0.0
 
 Initial stable GitHub release of IB Math AA HL ToolBox.
-
-### Highlights
-
-- Text-based CLI with continuous menu navigation
-- Fast mode for quick answers
-- Learning mode with formulas, plain-English explanations, and calculation steps
-- Matrix operations: addition, multiplication, determinant, and inverse
-- Probability tools: factorial, permutations, combinations, conditional probability, and binomial probability
-- Function tools: polynomial evaluation and numerical derivative approximation
-- Vector tools: dot product and 3D cross product
-- Statistics tools: mean, variance, and standard deviation
-- Basic pytest suite for matrix operations, probability functions, and edge cases
-- MIT license
-
-### Validation
-
-- `python -m pytest`
-- `python main.py`

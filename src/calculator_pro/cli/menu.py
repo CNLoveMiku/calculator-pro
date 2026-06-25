@@ -3,6 +3,8 @@
 from collections.abc import Callable
 from math import cos, sin
 
+from calculator_pro.ai import AIExplanationEngine
+from calculator_pro.export import SolutionReport, export_solution_pdf
 from calculator_pro.functions import approximate_derivative, evaluate_polynomial
 from calculator_pro.matrix import add, determinant, inverse, multiply
 from calculator_pro.matrix.types import Matrix
@@ -16,6 +18,8 @@ from calculator_pro.probability import (
     simulate_binomial_trials,
 )
 from calculator_pro.statistics import mean, standard_deviation, variance
+from calculator_pro.study import create_study_session
+from calculator_pro.ui import MenuController
 from calculator_pro.vectors import (
     angle_between_vectors,
     cross_product,
@@ -23,6 +27,7 @@ from calculator_pro.vectors import (
     magnitude,
 )
 from calculator_pro.visualization import (
+    plot_expression_analysis,
     plot_function,
     plot_matrix_transformation,
     plot_polynomial,
@@ -35,6 +40,7 @@ LearningDetails = tuple[str, list[LearningStep]]
 
 LEARNING_MODE = False
 EXAM_MODE = False
+AI_ENGINE = AIExplanationEngine()
 
 
 def run_cli() -> None:
@@ -47,6 +53,8 @@ def run_cli() -> None:
         "5": ("Statistics tools", _statistics_menu),
         "6": ("Matrix tools", _matrix_menu),
         "7": ("Vector tools", _vector_menu),
+        "8": ("Study Session", _study_session_menu),
+        "9": ("Export PDF report", _export_report_menu),
         "0": ("Exit", _exit_menu),
     }
 
@@ -138,6 +146,7 @@ def _visualization_menu() -> None:
         "1": ("Plot common function y = f(x)", _visualization_function),
         "2": ("Plot polynomial graph", _visualization_polynomial),
         "3": ("Plot 2x2 matrix transformation", _visualization_matrix),
+        "4": ("Interactive expression graph analysis", _visualization_expression_analysis),
         "0": ("Back", _back_menu),
     }
 
@@ -146,29 +155,7 @@ def _visualization_menu() -> None:
 
 def _run_menu(title: str, actions: dict[str, tuple[str, MenuHandler]]) -> None:
     """Display a menu and run actions until the user chooses 0."""
-    while True:
-        _print_header(title)
-        print(f"Mode: {_current_mode_label()}")
-        for key, (label, _) in actions.items():
-            print(f"{key}. {label}")
-
-        try:
-            choice = input("Select an option: ").strip()
-        except EOFError:
-            print()
-            break
-
-        action = actions.get(choice)
-
-        if action is None:
-            print("Invalid option. Please enter one of the listed numbers.")
-            continue
-
-        _, handler = action
-        handler()
-
-        if choice == "0":
-            break
+    MenuController(_current_mode_label).run(title, actions, _print_header)
 
 
 def _matrix_addition() -> None:
@@ -739,6 +726,100 @@ def _visualization_matrix() -> None:
     _run_calculation(action, details)
 
 
+def _visualization_expression_analysis() -> None:
+    expression = _read_non_empty_text("Enter f(x), for example x^2 - 4 or sin(x): ")
+    x_min = _read_float("Enter minimum x: ")
+    x_max = _read_float("Enter maximum x: ")
+    zoom_ranges = _read_zoom_ranges()
+    output_path = _read_output_path("interactive_graph_analysis.png")
+    details = (
+        "Plot f(x) and estimate f'(x) using central difference",
+        [
+            (
+                "Parse the entered expression as a safe function of x.",
+                "Only approved math operations and functions are allowed, which keeps input controlled.",
+            ),
+            (
+                "Graph f(x) and a numerical derivative curve on the same axes.",
+                "The derivative curve shows gradient behavior across the interval.",
+            ),
+            (
+                "Estimate roots and stationary points from sign changes.",
+                "IB graph analysis often uses intercepts and turning points to interpret function behavior.",
+            ),
+            (
+                "Replot requested zoom windows as additional panels.",
+                "Zooming helps inspect local behavior without changing the original function.",
+            ),
+        ],
+    )
+
+    def action() -> None:
+        _, analysis = plot_expression_analysis(
+            expression,
+            x_min,
+            x_max,
+            output_path=output_path,
+            zoom_ranges=zoom_ranges,
+        )
+        print(f"\nGraph analysis saved to {output_path}")
+        print(f"Estimated roots: {_format_points(analysis.roots)}")
+        print(f"Estimated maxima: {_format_coordinate_points(analysis.maxima)}")
+        print(f"Estimated minima: {_format_coordinate_points(analysis.minima)}")
+
+    _run_calculation(action, details)
+
+
+def _study_session_menu() -> None:
+    topic = _read_non_empty_text(
+        "Choose topic (binomial probability, vectors, polynomial graphs, or custom): "
+    )
+    session = create_study_session(topic)
+    _print_header(f"Study Session: {session.topic}")
+    for index, step in enumerate(session.steps, start=1):
+        print(f"\n{index}. {step.title}")
+        print(step.prompt)
+        if index < len(session.steps):
+            _pause()
+    _pause()
+
+
+def _export_report_menu() -> None:
+    title = _read_non_empty_text("Report title: ")
+    problem = _read_non_empty_text("Problem statement: ")
+    answer = _read_non_empty_text("Final answer: ")
+    explanation = _read_non_empty_text("Explanation summary: ")
+    steps = _read_multiline_items("Enter solution steps, one per line. Blank line to finish:")
+    graph_paths = _read_multiline_items("Enter graph image paths to include. Blank line to finish:")
+    output_path = _read_output_path("solution_report.pdf")
+
+    report = SolutionReport(
+        title=title,
+        problem=problem,
+        answer=answer,
+        explanation=explanation,
+        steps=steps,
+        graph_paths=graph_paths,
+    )
+    details = (
+        "PDF report = problem + final answer + explanation + steps + optional graphs",
+        [
+            (
+                "Collect the written solution and any graph image paths.",
+                "A portfolio-grade learning artifact should preserve both reasoning and visual evidence.",
+            ),
+            (
+                "Render the content into a PDF.",
+                "PDF export makes the solution shareable for revision or teacher feedback.",
+            ),
+        ],
+    )
+    _run_calculation(
+        lambda: print(f"\nPDF report saved to {export_solution_pdf(report, output_path)}"),
+        details,
+    )
+
+
 def _read_matrix() -> Matrix:
     """Read matrix dimensions and row values from the user."""
     rows = _read_positive_int("Number of rows: ", maximum=10)
@@ -770,6 +851,15 @@ def _read_matrix() -> Matrix:
     return matrix
 
 
+def _read_non_empty_text(prompt: str) -> str:
+    """Read non-empty text input."""
+    while True:
+        text = input(prompt).strip()
+        if text:
+            return text
+        print("Input cannot be empty.")
+
+
 def _read_coefficients() -> list[float]:
     """Read polynomial coefficients in descending power order."""
     return _read_number_list("Enter coefficients from highest power to constant term: ")
@@ -796,6 +886,30 @@ def _read_number_list(prompt: str) -> list[float]:
             continue
 
         return values
+
+
+def _read_multiline_items(prompt: str) -> list[str]:
+    """Read multiple lines until a blank line."""
+    print(prompt)
+    items: list[str] = []
+    while True:
+        text = input("> ").strip()
+        if not text:
+            return items
+        items.append(text)
+
+
+def _read_zoom_ranges() -> list[tuple[float, float]]:
+    """Read optional zoom ranges for expression graphing."""
+    ranges: list[tuple[float, float]] = []
+    if not _read_yes_no("Add a zoom panel? (y/n): "):
+        return ranges
+    while True:
+        start = _read_float("Zoom minimum x: ")
+        stop = _read_float("Zoom maximum x: ")
+        ranges.append((start, stop))
+        if not _read_yes_no("Add another zoom panel? (y/n): "):
+            return ranges
 
 
 def _read_positive_int(prompt: str, maximum: int | None = None) -> int:
@@ -924,6 +1038,18 @@ def _print_learning_details(
         print(f"{index}. {step}")
         print(f"   Why valid: {why_valid}")
 
+    explanation = AI_ENGINE.explain(
+        topic="IB Math AA HL",
+        problem="Current CLI calculation",
+        answer="See final answer above",
+        formula=formula,
+        steps=steps,
+    )
+    print(f"\nAI explanation layer ({explanation.source})")
+    print(f"Intuitive explanation: {explanation.intuitive}")
+    print(f"Formal mathematical solution: {explanation.formal_solution}")
+    print(f"IB exam strategy tip: {explanation.exam_strategy_tip}")
+
 
 def _print_header(title: str) -> None:
     print(f"\n{title}")
@@ -952,6 +1078,21 @@ def _format_number(value: float | int) -> str:
         return str(int(value))
 
     return f"{value:.8g}"
+
+
+def _format_points(values: list[float]) -> str:
+    if not values:
+        return "none detected"
+    return ", ".join(_format_number(value) for value in values)
+
+
+def _format_coordinate_points(values: list[tuple[float, float]]) -> str:
+    if not values:
+        return "none detected"
+    return ", ".join(
+        f"({_format_number(x_value)}, {_format_number(y_value)})"
+        for x_value, y_value in values
+    )
 
 
 def _matrix_size(matrix: Matrix) -> str:

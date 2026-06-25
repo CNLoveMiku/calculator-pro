@@ -1,108 +1,109 @@
 # IB Math AA HL ToolBox
 
-IB Math AA HL ToolBox is a modular Python command-line calculator for students
-practicing IB Mathematics: Analysis and Approaches Higher Level.
+`calculator-pro` is now a portfolio-grade **IB Math + AI learning system**.
+It began as a clean command-line calculator and has grown into a structured
+learning tool for IB Mathematics: Analysis and Approaches HL students.
 
-Version 2.0.0 adds graphing, Monte Carlo probability simulation, stronger
-vector tools, and a more complete learning mode. The project is intentionally
-transparent: functions are small, typed where useful, and paired with formulas
-and plain-English explanations.
+The design goal is simple: do not just output answers. Help students see the
+idea, the formal method, the exam strategy, and the graph or report that makes
+the solution reusable.
 
-## v2.0.0 Features
+## Project Story
 
-- Visualization layer with matplotlib
-  - Plot common functions, such as `y = x^2`, `sin(x)`, and `cos(x)`
-  - Plot polynomial graphs from coefficients
-  - Add optional tangent lines using derivative approximation
-  - Label endpoints, approximate x-intercepts, and tangent points
-  - Save 2x2 matrix transformation diagrams with BEFORE and AFTER panels
-- Probability simulation engine
-  - Monte Carlo probability estimation
-  - Binomial trial simulation
-  - Histogram output for simulation results
-- Enhanced learning mode
-  - Formula shown for each CLI calculation
-  - Step-by-step derivation
-  - Short explanation of why each step is valid
-  - IB Math AA HL exam-style method language
-- Exam Mode
-  - Hides step-by-step solutions
-  - Shows final answers only
-  - Simulates exam-condition checking
-- Extended vector module
-  - Dot product
-  - Cross product
-  - Magnitude
-  - Angle between vectors
-- Existing v1 tools remain available
-  - Matrix operations
-  - Probability and combinatorics
-  - Polynomial evaluation
-  - Numerical derivative approximation
-  - Simple statistics
+Version 1.0.0 introduced a modular calculator for matrices, functions,
+probability, vectors, and statistics.
+
+Version 2.0.0 added visualization, Monte Carlo simulation, and a stronger
+learning mode.
+
+Version 3.0.0 turns the project into an AI-assisted education product:
+
+- optional AI explanations with rule-based fallback
+- interactive function graph analysis
+- IB Math Study Session flow
+- PDF solution reports
+- cleaner architecture layers for `core`, `ui`, `visualization`, `ai`, and `export`
+
+## Learning Philosophy
+
+The toolbox is built around five learning principles:
+
+1. **Concept before computation**: students should understand what a formula
+   means before substituting values.
+2. **Formal method matters**: solutions show valid mathematical steps suitable
+   for IB-style work.
+3. **Strategy is teachable**: each AI explanation includes an IB exam tip.
+4. **Graphs are evidence**: visualizations expose roots, derivatives, extrema,
+   and transformations.
+5. **Reflection improves transfer**: study sessions end with reflection prompts
+   so students generalize beyond one question.
+
+## v3.0.0 Features
+
+### AI Explanation Engine
+
+For each learning-mode calculation, the system can generate:
+
+- intuitive explanation
+- formal mathematical solution
+- IB exam strategy tip
+
+If `OPENAI_API_KEY` is not available, the engine automatically uses a
+rule-based fallback, so the project remains fully usable offline.
+
+### Interactive Graph System
+
+Students can enter expressions such as:
+
+```text
+x^2 - 4
+sin(x)
+exp(-x^2)
+```
+
+The graph system plots:
+
+- `f(x)`
+- numerical derivative curve `f'(x)`
+- estimated roots
+- estimated maxima and minima
+- optional zoom panels
+
+### IB Math Study Mode
+
+Study Session mode follows a five-step learning flow:
+
+1. Concept introduction
+2. Guided example
+3. Practice question
+4. Solution check
+5. Reflection question
+
+Built-in study topics include binomial probability, vectors, and polynomial
+graphs. Custom topics use a generic IB revision structure.
+
+### Export System
+
+PDF reports can include:
+
+- problem statement
+- final answer
+- explanation
+- solution steps
+- graph images
+
+This makes it useful for revision logs, tutor feedback, or a portfolio demo.
 
 ## IB Math AA HL Relevance
 
-This toolbox maps to common IB Math AA HL work:
-
-- Algebra and functions: polynomial evaluation, graphing, roots and curve shape
-- Calculus: numerical derivative approximation and gradient interpretation
-- Vectors: scalar product, vector product, magnitude, and angle
-- Probability: counting methods, conditional probability, binomial models, and simulation
+- Algebra and functions: polynomial evaluation, graphing, roots, and turning points
+- Calculus: derivative approximation, tangent lines, and gradient interpretation
+- Probability: combinatorics, conditional probability, binomial models, simulation
+- Vectors: dot product, cross product, magnitude, and angle
 - Statistics: mean, variance, standard deviation, and distribution shape
-- Matrices: operations, determinants, inverses, and 2D transformations
+- Matrices: operations, determinants, inverses, and geometric transformations
 
-The tool is designed for revision and method-checking. Students should still
-follow classroom expectations and IB exam calculator rules.
-
-## Requirements
-
-- Python 3.11 or newer recommended
-- matplotlib for visualization
-- pytest for tests
-
-## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/CNLoveMiku/calculator-pro.git
-cd calculator-pro
-```
-
-Create and activate a virtual environment:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-
-On Windows PowerShell:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Optional editable install:
-
-```bash
-pip install -e .
-```
-
-## Usage
-
-Run the CLI directly:
-
-```bash
-python main.py
-```
+## Screenshots / ASCII Preview
 
 Main menu:
 
@@ -117,67 +118,33 @@ Mode: Fast mode
 5. Statistics tools
 6. Matrix tools
 7. Vector tools
+8. Study Session
+9. Export PDF report
 0. Exit
 ```
 
-## CLI Examples
-
-### Matrix Addition
+Learning mode output:
 
 ```text
-A + B =
-[ 6  8 ]
-[ 10  12 ]
-```
-
-### Learning Mode
-
-```text
-P(X = k) = 0.3456
-
-Learning mode explanation
 Formula: P(X = k) = nCk x p^k x (1 - p)^(n - k)
 Derivation:
 1. Count success positions using 5C2.
    Why valid: Exactly k successes can occur in that many unordered positions among n trials.
-2. Multiply by p^k = 0.4^2.
-   Why valid: Independent successes multiply their probabilities.
-3. Multiply by (1 - p)^(n - k) = 0.6^3.
-   Why valid: The remaining trials must be failures, each with probability 1 - p.
+
+AI explanation layer (rule-based)
+Intuitive explanation: ...
+Formal mathematical solution: ...
+IB exam strategy tip: ...
 ```
 
-### Exam Mode
-
-Exam Mode is controlled from Learning mode settings:
+Interactive graph analysis:
 
 ```text
-Mode: EXAM MODE - final answers only
-
-mean = 2
+expression -> f(x) curve -> derivative curve -> roots/extrema -> zoom panel -> PNG
+ x^2 - 4       parabola        line 2x          x = -2, 2       [-3, 0]
 ```
 
-In Exam Mode, formulas and derivations are hidden so the CLI behaves like a
-final-answer checking tool.
-```
-
-### Visualization Output
-
-The CLI saves plots to `outputs/` by default:
-
-```text
-Graph saved to outputs/polynomial_graph.png
-Histogram saved to outputs/simulation_histogram.png
-Matrix transformation plot saved to outputs/matrix_transformation.png
-```
-
-ASCII sketch of a function plot workflow with tangent:
-
-```text
-coefficients -> evaluate y-values -> optional tangent -> labeled PNG
-     [1 0 -4]          y = x^2 - 4       slope at x=a     outputs/polynomial_graph.png
-```
-
-ASCII sketch of matrix transformation visualization:
+Matrix transformation:
 
 ```text
 BEFORE panel              matrix A      AFTER panel
@@ -186,67 +153,104 @@ BEFORE panel              matrix A      AFTER panel
  (0,0)----(1,0)                            A(0,0)----A(1,0)
 ```
 
-## Python API Examples
+## Installation
 
-```python
-from calculator_pro.probability import estimate_binomial_probability
-from calculator_pro.vectors import angle_between_vectors, magnitude
-from calculator_pro.visualization import plot_polynomial
-
-print(magnitude([3, 4]))
-print(angle_between_vectors([1, 0], [0, 1], degrees=True))
-print(estimate_binomial_probability(5, 2, 0.4, 1000, seed=42))
-
-plot_polynomial(
-    [1, 0, -4],
-    -5,
-    5,
-    derivative_at=1,
-    output_path="outputs/parabola.png",
-)
+```bash
+git clone https://github.com/CNLoveMiku/calculator-pro.git
+cd calculator-pro
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-## Running Tests
+Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+Optional editable install:
+
+```bash
+pip install -e .
+```
+
+Optional AI:
+
+```bash
+export OPENAI_API_KEY="your_api_key_here"
+```
+
+Without the key, rule-based explanations are used automatically.
+
+## Usage
+
+Run the CLI:
+
+```bash
+python main.py
+```
+
+Run tests:
 
 ```bash
 python -m pytest
 ```
 
-The test suite covers matrix operations, probability functions, Monte Carlo
-simulation, vector operations, visualization file output, and validation edge
-cases, including CLI Learning Mode and Exam Mode behavior.
+Python API example:
 
-## Project Structure
+```python
+from calculator_pro.ai import AIExplanationEngine
+from calculator_pro.visualization import plot_expression_analysis
+from calculator_pro.export import SolutionReport, export_solution_pdf
+
+plot_expression_analysis("x^2 - 4", -5, 5, output_path="outputs/graph.png")
+
+engine = AIExplanationEngine()
+explanation = engine.explain(
+    topic="polynomial graphs",
+    problem="Find the roots of x^2 - 4",
+    answer="x = -2, 2",
+    formula="x^2 - 4 = 0",
+    steps=[("Factor as (x-2)(x+2)=0.", "Difference of squares.")],
+)
+
+export_solution_pdf(
+    SolutionReport(
+        title="Polynomial roots",
+        problem="Find the roots of x^2 - 4",
+        answer="x = -2, 2",
+        explanation=explanation.formal_solution,
+        steps=["Set y = 0.", "Factor.", "Solve each factor."],
+        graph_paths=["outputs/graph.png"],
+    ),
+    "outputs/report.pdf",
+)
+```
+
+## Architecture
 
 ```text
-calculator-pro/
-├── LICENSE
-├── README.md
-├── RELEASE_NOTES.md
-├── main.py
-├── pyproject.toml
-├── requirements.txt
-├── src/
-│   └── calculator_pro/
-│       ├── cli/
-│       ├── functions/
-│       ├── matrix/
-│       ├── probability/
-│       ├── statistics/
-│       ├── vectors/
-│       └── visualization/
-└── tests/
-    ├── test_matrix_operations.py
-    ├── test_probability_functions.py
-    ├── test_probability_simulation.py
-    ├── test_cli_modes.py
-    ├── test_vectors.py
-    └── test_visualization.py
+src/calculator_pro/
+├── ai/              optional AI + rule-based explanations
+├── core/            safe math expression parsing
+├── ui/              menu controller
+├── cli/             command-line product experience
+├── export/          PDF report generation
+├── visualization/   plots, graph analysis, transformations
+├── study/           structured IB study sessions
+├── matrix/
+├── probability/
+├── functions/
+├── vectors/
+└── statistics/
 ```
 
 ## Release Status
 
-Version: `v2.0.1`
+Version: `v3.0.0`
 
 ## License
 
